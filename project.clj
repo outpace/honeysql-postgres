@@ -8,7 +8,7 @@
                  [honeysql "0.9.3"]]
   :doo {:build "test"
         :alias {:default [:node]}}
-  :cljsbuild {:builds {:test {:source-paths ["src" "test"]
+  :cljsbuild {:builds {:test {:source-paths ["resources" "src" "test"]
                               :compiler {:output-to "target/doo/honeysql-postgres.js"
                                          :output-dir "target/doo"
                                          :optimaztions :none
