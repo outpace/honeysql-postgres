@@ -5,15 +5,15 @@
 
 (defprotocol Parser
   "Protocol for a parser."
-  (parse [_ state tokens]
-    "Parses the given tokens with the given state.  Returns either no-match
-    or a tuple of matched value, new state, and remaining tokens."))
+  (parse [_ tokens]
+    "Parses the given tokens.  Returns either no-match or a tuple of matched
+    value and remaining tokens."))
 
 (deftype Alt [parsers]
   Parser
-  (parse [_ state tokens]
+  (parse [_ tokens]
     (reduce (fn [_ p]
-              (let [result (parse p state tokens)]
+              (let [result (parse p tokens)]
                 (if (not= no-match result)
                   (reduced result)
                   no-match)))
@@ -27,24 +27,24 @@
 
 (deftype Maybe [parser no-value]
   Parser
-  (parse [_ state tokens]
-    (let [result (parse parser state tokens)]
+  (parse [_ tokens]
+    (let [result (parse parser tokens)]
       (if (not= no-match result)
         result
-        [no-value state tokens])))
+        [no-value tokens])))
   Object
   (toString [_]
     (str parser " ?")))
 
 (deftype Sequence [parsers]
   Parser
-  (parse [_ state tokens]
-    (reduce (fn [[r s t] p]
-              (let [result (parse p s t)]
+  (parse [_ tokens]
+    (reduce (fn [[r t] p]
+              (let [result (parse p t)]
                 (if (= no-match result)
                   (reduced no-match)
                   (assoc result 0 (conj r (first result))))))
-            [[] state tokens]
+            [[] tokens]
             parsers))
   Object
   (toString [_]
@@ -52,10 +52,10 @@
 
 (deftype Predicate [pred str-rep]
   Parser
-  (parse [_ state [t & more :as tokens]]
+  (parse [_ [t & more :as tokens]]
     (cond
       (empty? tokens) no-match
-      (pred t) [t state more]
+      (pred t) [t more]
       :otherwise no-match))
   Object
   (toString [_]
@@ -63,13 +63,13 @@
 
 (deftype Vector [parsers]
   Parser
-  (parse [_ state [t & more]]
+  (parse [_ [t & more]]
     (if (vector? t)
-      (let [result (parse (->Sequence parsers) state t)]
+      (let [result (parse (->Sequence parsers) t)]
         (if (not= no-match result)
-          (let [[_ _ extra-tokens] result]
+          (let [[_ extra-tokens] result]
             (if (empty? extra-tokens)
-              (assoc result 2 more)
+              (assoc result 1 more)
               no-match))
           no-match))
       no-match))
@@ -83,12 +83,12 @@
 
 (deftype Transform [parser f]
   Parser
-  (parse [_ state tokens]
-    (let [result (parse parser state tokens)]
+  (parse [_ tokens]
+    (let [result (parse parser tokens)]
       (if (not= result no-match)
-        (let [[inner-result inner-state tokens] result
-              new-result (f inner-result inner-state)]
-          (conj new-result tokens))
+        (let [[inner-result tokens] result
+              new-result (f inner-result)]
+          [new-result tokens])
         no-match)))
   Object
   (toString [_]
@@ -96,10 +96,10 @@
 
 (deftype KleeneStar [parser]
   Parser
-  (parse [_ state tokens]
-    (loop [[acc state tokens :as last] [[] state tokens]]
+  (parse [_ tokens]
+    (loop [[acc tokens :as last] [[] tokens]]
       (if (seq tokens)
-        (let [result (parse parser state tokens)]
+        (let [result (parse parser tokens)]
           (if (not= no-match result)
             (recur (assoc result 0 (conj acc (first result))))
             last))
@@ -110,8 +110,8 @@
 
 (deftype KleenePlus [parser]
   Parser
-  (parse [_ state tokens]
-    (let [star-result (parse (->KleeneStar parser) state tokens)]
+  (parse [_ tokens]
+    (let [star-result (parse (->KleeneStar parser) tokens)]
       (cond
         (= no-match star-result) no-match
         (zero? (count (first star-result))) no-match
@@ -122,17 +122,17 @@
 
 (deftype Epsilon []
   Parser
-  (parse [_ state tokens]
+  (parse [_ tokens]
     (if (seq tokens)
       no-match
-      [nil state nil]))
+      [nil nil]))
   Object
   (toString [_] "ε"))
 
 #?(:clj
    (defmacro pred*
-     "Creates a parser that will match the given predicate.  Takes a state
-     transformation function and text representation as optional arguments."
+     "Creates a parser that will match the given predicate.  Takes a text
+     representation as optional arguments."
      ([p]
       `(pred* ~p ~(pr-str p)))
      ([p txt]
