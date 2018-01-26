@@ -89,9 +89,9 @@
   [constraint-parser]
   (p/map-result (fn [[name constraint deferrable? initially]]
                   (-> constraint
-                      (pg-sqlt/with-name name)
-                      (pg-sqlt/with-deferrable? deferrable?)
-                      (pg-sqlt/with-initially initially)))
+                      (assoc :name name)
+                      (assoc :deferrable? deferrable?)
+                      (assoc :initially initially)))
                 (p/seq (p/? constraint-name)
                        constraint-parser
                        (p/? deferrable)

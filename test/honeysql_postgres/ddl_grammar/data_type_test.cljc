@@ -45,10 +45,10 @@
              (p/parse ddl/type [:double-precision])))
       (is (= (pg-sqlt/->PgSqlSimpleType :float8)
              (p/parse ddl/type [:float8])))
-      (is (= (pg-sqlt/->PgSqlFloatType :float nil)
+      (is (= (pg-sqlt/->PgSqlFloatType nil)
              (p/parse ddl/type [:float]))))
     (testing "with precision"
-      (is (= (pg-sqlt/->PgSqlFloatType :float 10)
+      (is (= (pg-sqlt/->PgSqlFloatType 10)
              (p/parse ddl/type [:float [10]])))))
   (testing "serial types"
     (is (= (pg-sqlt/->PgSqlSimpleType :serial)
@@ -327,27 +327,27 @@
 
 (deftest test-parse-data-type--arrays
   (testing "arrays using standard SQL syntax"
-    (is (= (pg-sqlt/->SqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) nil)
+    (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [] true)
            (p/parse ddl/type [:integer :array]))
         "without size")
-    (is (= (pg-sqlt/->SqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) 4)
+    (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4]] true)
            (p/parse ddl/type [:integer :array [4]]))
         "with size"))
   (testing "arrays using the PosgreSQL syntax"
     (testing "one dimension"
-      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[]])
+      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[]] false)
              (p/parse ddl/type [:integer []]))
           "without size")
-      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4]])
+      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4]] false)
              (p/parse ddl/type [:integer [4]]))
           "with size"))
     (testing "multiple dimension"
-      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[] [] [] []])
+      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[] [] [] []] false)
              (p/parse ddl/type [:integer [] [] [] []]))
           "without sizes")
-      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4] [3] [2] [1]])
+      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4] [3] [2] [1]] false)
              (p/parse ddl/type [:integer [4] [3] [2] [1]]))
           "with sizes")
-      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[] [3] [] [1]])
+      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[] [3] [] [1]] false)
              (p/parse ddl/type [:integer [] [3] [] [1]]))
           "mixing with and without sizes"))))

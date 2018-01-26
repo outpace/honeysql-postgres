@@ -1,1 +1,1 @@
-{pg-sql/type honeysql-postgres.types/->PgSqlType}
+{pg-sql/type honeysql-postgres.ddl-grammar.data-type/parse-pg-sql-type}

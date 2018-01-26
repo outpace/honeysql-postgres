@@ -51,7 +51,7 @@
 (def ^:private boxed-positive-integer?
   "Parser that gets a single positive integer from a vector."
   (p/map-result first
-                (p/vector (p/pred (every-pred integer? pos?) "pos-int?"))))
+                (p/vector positive-integer?)))
 
 (def ^:private natural-integer?
   (p/pred (every-pred integer? (complement neg?)) "nat-int?"))
@@ -69,7 +69,7 @@
 
 (def ^:private float-type
   "Parser for FLOAT types which may include a precision argument."
-  (p/map-result #(apply pg-sqlt/->PgSqlFloatType %)
+  (p/map-result #(pg-sqlt/->PgSqlFloatType (second %))
                 (p/seq (p/lit :float)
                        (p/? boxed-positive-integer?))))
 
@@ -117,19 +117,38 @@
 
 (def ^:private sql-array
   "Parser for an array suffix using the standard SQL syntax."
-  (p/seq (p/lit :array)
-         (p/? boxed-positive-integer?)))
+  (p/map-result (fn [[_ size?]]
+                  (pg-sqlt/->PgSqlArrayType nil
+                                            (if (some? size?) [size?] [])
+                                            true))
+                (p/seq (p/lit :array)
+                       (p/? (p/vector positive-integer?)))))
 
 (def ^:private pg-sql-array
   "Parser for an array suffix using the PostgreSQL syntax."
-  (p/+ (p/map-result #(if (first %) % []) (p/vector (p/? positive-integer?)))))
+  (p/map-result #(pg-sqlt/->PgSqlArrayType nil % false)
+                (p/+ (p/map-result #(if (first %) % [])
+                                   (p/vector (p/? positive-integer?))))))
 
 (def type
   "Parser for a SQL type including arrays."
   (p/map-result (fn [[base array]]
-                  (cond
-                    (nil? array) base
-                    (= :array (first array)) (pg-sqlt/->SqlArrayType base (second array))
-                    :pg-sql (pg-sqlt/->PgSqlArrayType base array)))
+                  (if array
+                    (assoc array :base-type base)
+                    base))
                 (p/seq base-type
                        (p/? (p/| sql-array pg-sql-array)))))
+
+(defn ^:private parse-pg-sql-type*
+  "Reader function for pg-sql/type tagged literals."
+  [args]
+  (let [result (p/parse (p/map-result first
+                                      (p/seq type p/ε))
+                        args)]
+    (if (not= ::p/no-match result)
+      result)))
+
+(defn parse-pg-sql-type
+  "Reader function for pg-sql/type tagged literals."
+  [args]
+  (#?(:clj (resolve `parse-pg-sql-type*) :cljs parse-pg-sql-type*) args))
