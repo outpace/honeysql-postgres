@@ -140,10 +140,7 @@
 (defn ^:private parse-pg-sql-type*
   "Reader function for pg-sql/type tagged literals."
   [args]
-  (let [result (p/parse (p/map first (p/seq type p/ε))
-                        args)]
-    (if (not= ::p/no-match result)
-      result)))
+  (p/parse (p/map first (p/seq type p/ε)) args :throw? true))
 
 (defn parse-pg-sql-type
   "Reader function for pg-sql/type tagged literals."

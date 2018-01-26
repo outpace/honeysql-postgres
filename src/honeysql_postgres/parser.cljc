@@ -70,8 +70,9 @@
 
 (defn parse
   "Invokes the parser with the given tokens."
-  [parser tokens]
+  [parser tokens & {:keys [throw?]}]
   (let [result (proto/parse parser tokens)]
-    (if (not= ::no-match result)
-      (first result)
-      result)))
+    (cond
+      (not= ::no-match result) (first result)
+      throw?  (throw (IllegalArgumentException. (proto/explain parser tokens)))
+      :else result)))
