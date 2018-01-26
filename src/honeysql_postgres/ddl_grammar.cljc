@@ -167,3 +167,13 @@
     (if (= ::p/no-match result)
       row
       result)))
+
+(defn parse-type
+  "Parses an argument list as a type, throwing an exception if the parsing fails."
+  [args]
+  (p/parse (p/map first (p/seq dt/type p/ε)) args :throw? true))
+
+(defn read-pg-sql-type
+  "Reader function for pg-sql/type tagged literals."
+  [args]
+  (#?(:clj (resolve `parse-type) :cljs parse-type) args))

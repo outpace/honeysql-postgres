@@ -136,13 +136,3 @@
              base))
          (p/seq base-type
                 (p/? (p/| sql-array pg-sql-array)))))
-
-(defn ^:private parse-pg-sql-type*
-  "Reader function for pg-sql/type tagged literals."
-  [args]
-  (p/parse (p/map first (p/seq type p/ε)) args :throw? true))
-
-(defn parse-pg-sql-type
-  "Reader function for pg-sql/type tagged literals."
-  [args]
-  (#?(:clj (resolve `parse-pg-sql-type*) :cljs parse-pg-sql-type*) args))
