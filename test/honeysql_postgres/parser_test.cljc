@@ -16,6 +16,19 @@
           "no input tokens")
       (is (= ::p/no-match (proto/parse parser [:baz :foo :foo :bar]))
           "failed parse"))
+    (testing "explaining"
+      (is (nil? (proto/explain parser [:foo]))
+          "basic parse")
+      (is (nil? (proto/explain parser [:bar]))
+          "basic parse")
+      (is (nil? (proto/explain parser [:foo :foo :bar]))
+          "leftover tokens")
+      (is (= "End of input when expecting ( :foo | :bar )"
+             (proto/explain parser []))
+          "no input tokens")
+      (is (= ":baz did not match ( :foo | :bar )"
+             (proto/explain parser [:baz :foo :foo :bar]))
+          "failed parse"))
     (is (= "( :foo | :bar )" (str parser))
         "text representation is correct")))
 
@@ -29,6 +42,17 @@
       (is (= ::p/no-match (proto/parse parser []))
           "no input tokens")
       (is (= ::p/no-match (proto/parse parser [:baz :foo :foo :bar]))
+          "failed parse"))
+    (testing "explaining"
+      (is (nil? (proto/explain parser [:foo]))
+          "basic parse")
+      (is (nil? (proto/explain parser [:foo :foo :bar]))
+          "leftover tokens")
+      (is (= "End of input when expecting :foo"
+             (proto/explain parser []))
+          "no input tokens")
+      (is (= ":baz did not match :foo"
+             (proto/explain parser [:baz :foo :foo :bar]))
           "failed parse"))
     (is (= ":foo" (str parser))
         "text representation is correct")))
@@ -46,6 +70,17 @@
         (is (= ::p/no-match (proto/parse parser [:foo]))
             "invalid token")
         (is (= ::p/no-match (proto/parse parser []))
+            "no input tokens"))
+      (testing "explaing"
+        (is (nil? (proto/explain parser [:a]))
+            "parsed")
+        (is (nil? (proto/explain parser [:a :a]))
+            "parsed with extra input")
+        (is (= "Alternates failed: :foo did not match :a"
+               (proto/explain parser [:foo]))
+            "invalid token")
+        (is (= "Alternates failed: End of input when expecting :a"
+               (proto/explain parser []))
             "no input tokens"))
       (is (= "( :a )" (str parser))
           "text representation is correct")))
@@ -66,6 +101,27 @@
             "invalid token")
         (is (= ::p/no-match (proto/parse parser []))
             "no input tokens"))
+      (testing "explaining"
+        (is (nil? (proto/explain parser [:a]))
+            "parsed")
+        (is (nil? (proto/explain parser [:b]))
+            "parsed")
+        (is (nil? (proto/explain parser [:c]))
+            "parsed")
+        (is (nil? (proto/explain parser [:c :a]))
+            "parsed with extra input")
+        (is (= (str "Alternates failed: "
+                    ":foo did not match :a, "
+                    ":foo did not match :b, "
+                    ":foo did not match :c")
+               (proto/explain parser [:foo]))
+            "invalid token")
+        (is (= (str "Alternates failed: "
+                    "End of input when expecting :a, "
+                    "End of input when expecting :b, "
+                    "End of input when expecting :c")
+               (proto/explain parser []))
+            "no input tokens"))
       (is (= "( :a | :b | :c )" (str parser))
           "text representation is correct"))))
 
@@ -85,6 +141,15 @@
         (is (= [nil [:b :a]]
                (proto/parse parser [:b :a]))
             "non-matching input with extra tokens"))
+      (testing "explaining"
+        (is (nil? (proto/explain parser []))
+            "empty input")
+        (is (nil? (proto/explain parser [:a]))
+            "matching input")
+        (is (nil? (proto/explain parser [:a :a]))
+            "matching input with extra tokens")
+        (is (nil? (proto/explain parser [:b :a]))
+            "non-matching input with extra tokens"))
       (is (= ":a ?" (str parser))
           "text representation")))
   (testing "with given no value"
@@ -102,6 +167,15 @@
         (is (= [::nothing [:b :a]]
                (proto/parse parser [:b :a]))
             "non-matching input with extra tokens"))
+      (testing "explaining"
+        (is (nil? (proto/explain parser []))
+            "empty input")
+        (is (nil? (proto/explain parser [:a]))
+            "matching input")
+        (is (nil? (proto/explain parser [:a :a]))
+            "matching input with extra tokens")
+        (is (nil? (proto/explain parser [:b :a]))
+            "non-matching input with extra tokens"))
       (is (= ":a ?" (str parser))
           "text representation"))))
 
@@ -114,6 +188,11 @@
             "empty input")
         (is (= [[] [:a :b :c]]
                (proto/parse parser [:a :b :c]))
+            "non-empty input"))
+      (testing "explaining"
+        (is (nil?  (proto/explain parser []))
+            "empty input")
+        (is (nil?  (proto/explain parser [:a :b :c]))
             "non-empty input"))
       (is (= "" (str parser))
           "text representation")))
@@ -129,6 +208,17 @@
                (proto/parse parser [:a :b :c]))
             "matching input with extra stuff")
         (is (= ::p/no-match (proto/parse parser [:b :a]))
+            "non-matching input"))
+      (testing "explaining"
+        (is (= "End of input when expecting :a"
+               (proto/explain parser []))
+            "empty input")
+        (is (nil? (proto/explain parser [:a]))
+            "matching input")
+        (is (nil? (proto/explain parser [:a :b :c]))
+            "matching input with extra stuff")
+        (is (= ":b did not match :a"
+               (proto/explain parser [:b :a]))
             "non-matching input"))
       (is (= ":a" (str parser))
           "text representation")))
@@ -149,6 +239,20 @@
             "incomplete input")
         (is (= ::p/no-match (proto/parse parser [:b :a]))
             "non-matching input"))
+      (testing "explaining"
+        (is (= "End of input when expecting :a"
+               (proto/explain parser []))
+            "empty input")
+        (is (nil?  (proto/explain parser [:a :b :c]))
+            "matching input")
+        (is (nil? (proto/explain parser [:a :b :c :b :c]))
+            "matching input with extra stuff")
+        (is (= "After parsing :a :b, End of input when expecting :c"
+               (proto/explain parser [:a :b]))
+            "incomplete input")
+        (is (= ":b did not match :a"
+               (proto/explain parser [:b :a]))
+            "non-matching input"))
       (is (= ":a :b :c" (str parser))
           "text representation"))))
 
@@ -168,6 +272,17 @@
         (is (= ::p/no-match
                (proto/parse parser [:baz :foo :foo :bar]))
             "failed parse"))
+      (testing "expaining"
+        (is (nil? (proto/explain parser [1]))
+            "basic parse")
+        (is (nil? (proto/explain parser [1 :foo :bar]))
+            "leftover tokens")
+        (is (= "End of input when expecting integer?"
+               (proto/explain parser []))
+            "no input tokens")
+        (is (= ":baz did not match integer?"
+               (proto/explain parser [:baz :foo :foo :bar]))
+            "failed parse"))
       (is (= "integer?" (str parser))
           "text representation is correct")))
   (testing "with a text representation"
@@ -180,6 +295,17 @@
         (is (= ::p/no-match (proto/parse parser []))
             "no input tokens")
         (is (= ::p/no-match (proto/parse parser [:baz :foo :foo :bar]))
+            "failed parse"))
+      (testing "explaining"
+        (is (nil? (proto/explain parser [1]))
+            "basic parse")
+        (is (nil? (proto/explain parser [1 :foo :bar]))
+            "leftover tokens")
+        (is (= "End of input when expecting pos-int?"
+               (proto/explain parser []))
+            "no input tokens")
+        (is (= ":baz did not match pos-int?"
+               (proto/explain parser [:baz :foo :foo :bar]))
             "failed parse"))
       (is (= "pos-int?" (str parser))
           "text representation is correct"))))
@@ -198,6 +324,20 @@
             "matching input")
         (is (= [[] [:foo]] (proto/parse parser [[] :foo]))
             "matching input with extra tokens"))
+      (testing "explaining"
+        (is (= "Expected a vector but got end of input"
+               (proto/explain parser []))
+            "empty input")
+        (is (= "Expected a vector but got :foo"
+               (proto/explain parser [:foo]))
+            "non-matching input, not a vector")
+        (is (= "Contents of vector did not match: Expected end of input but found :foo"
+               (proto/explain parser [[:foo]]))
+            "non-matching input, contents do not match")
+        (is (nil? (proto/explain parser [[]]))
+            "matching input")
+        (is (nil? (proto/explain parser [[] :foo]))
+            "matching input with extra tokens"))
       (is (= "[]" (str parser))
           "text representation")))
   (testing "non-empty vector"
@@ -209,18 +349,49 @@
             "non-matching input, not a vector")
         (is (= ::p/no-match (proto/parse parser [[:a]]))
             "non-matching input, contents do not match")
-        (is (= [[:a :b] nil] (proto/parse parser [[:a :b]]))
+        (is (= [[:a :b] nil]
+               (proto/parse parser [[:a :b]]))
             "matching input")
         (is (= [[:a :b] [:foo]] (proto/parse parser [[:a :b] :foo]))
+            "matching input with extra tokens"))
+      (testing "explaining"
+        (is (= "Expected a vector but got end of input"
+               (proto/explain parser []))
+            "empty input")
+        (is (= "Expected a vector but got :foo"
+               (proto/explain parser [:foo]))
+            "non-matching input, not a vector")
+        (is (= "Contents of vector did not match: After parsing :a, End of input when expecting :b"
+               (proto/explain parser [[:a]]))
+            "non-matching input, contents do not match")
+        (is (nil? (proto/explain parser [[:a :b]]))
+            "matching input")
+        (is (nil? (proto/explain parser [[:a :b] :foo]))
             "matching input with extra tokens"))
       (is (= "[ :a :b ]" (str parser))
           "text representation"))))
 
 (deftest test-map
-  (let [parser (p/map dec (p/lit 42))]
-    (is (= ::p/no-match (proto/parse parser []))
-        "no input")
-    (is (= (str (p/lit 42)) (str parser))
+  (let [inner-parser (p/lit 42)
+        parser (p/map dec inner-parser)]
+    (testing "parsing"
+      (is (= ::p/no-match (proto/parse parser []))
+          "no input")
+      (is (= ::p/no-match (proto/parse parser [:foo]))
+          "non-matching input")
+      (is (= [41 nil] (proto/parse parser [42]))
+          "matching input"))
+    (testing "explaining"
+      (is (= (proto/explain inner-parser [])
+             (proto/explain parser []))
+          "no input")
+      (is (= (proto/explain inner-parser [:foo])
+             (proto/explain parser [:foo]))
+          "non-matching input")
+      (is (= (proto/explain inner-parser [42])
+             (proto/explain parser [42]))
+          "matching input"))
+    (is (= (str inner-parser) (str parser))
         "Text representation not altered")))
 
 (deftest test-*
@@ -240,6 +411,17 @@
           "matching input")
       (is (= [[] [:b :a]]
              (proto/parse parser [:b :a]))
+          "non-matching input with extra tokens"))
+    (testing "explaining"
+      (is (nil? (proto/explain parser []))
+          "empty input")
+      (is (nil? (proto/explain parser [:a]))
+          "matching input")
+      (is (nil? (proto/explain parser [:a :a]))
+          "matching input")
+      (is (nil? (proto/explain parser [:a :a :a]))
+          "matching input")
+      (is (nil? (proto/explain parser [:b :a]))
           "non-matching input with extra tokens"))
     (is (= ":a *" (str parser))
         "text representation")))
@@ -261,6 +443,19 @@
       (is (= ::p/no-match
              (proto/parse parser [:b :a]))
           "non-matching input with extra tokens"))
+    (testing "explaining"
+      (is (= "End of input when expecting :a"
+             (proto/explain parser []))
+          "empty input")
+      (is (nil? (proto/explain parser [:a]))
+          "matching input")
+      (is (nil? (proto/explain parser [:a :a]))
+          "matching input")
+      (is (nil? (proto/explain parser [:a :a :a]))
+          "matching input")
+      (is (= ":b did not match :a"
+             (proto/explain parser [:b :a]))
+          "non-matching input with extra tokens"))
     (is (= ":a +" (str parser))
         "text representation")))
 
@@ -272,6 +467,12 @@
             "empty input")
         (is (= ::p/no-match (proto/parse parser [:a]))
             "non-matching input"))
+      (testing "explaining"
+        (is (nil? (proto/explain parser []))
+            "empty input")
+        (is (= "Expected end of input but found :a"
+               (proto/explain parser [:a]))
+            "non-matching input"))
       (is (= "ε" (str parser)))))
   (testing "eps"
     (let [parser p/eps]
@@ -279,5 +480,11 @@
         (is (= [nil nil] (proto/parse parser []))
             "empty input")
         (is (= ::p/no-match (proto/parse parser [:a]))
+            "non-matching input"))
+      (testing "explaining"
+        (is (nil? (proto/explain parser []))
+            "empty input")
+        (is (= "Expected end of input but found :a"
+               (proto/explain parser [:a :b :c]))
             "non-matching input"))
       (is (= "ε" (str parser))))))

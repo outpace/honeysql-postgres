@@ -8,7 +8,7 @@
   "Matches the first matching parser in the list of parsers."
   [& parsers]
   {:pre [(pos? (count parsers))]}
-  (proto/->Alt parsers))
+  (proto/->Alt (vec parsers)))
 
 (defn ?
   "A parser that optionally matches the given parser."
@@ -20,7 +20,7 @@
 (defn seq
   "A parser that matches a sequence of parsers."
   [& parsers]
-  (proto/->Sequence parsers))
+  (proto/->Sequence (vec parsers)))
 
 (#?(:clj defalias :cljs def) pred proto/pred*)
 
@@ -41,7 +41,7 @@
 (defn vector
   "Matches a single vector with contents matching the sequence of parsers."
   [& parsers]
-  (proto/->Vector parsers))
+  (proto/->Vector (vec parsers)))
 
 (defn map
   "Creates a parser that transforms the result and state returned from the

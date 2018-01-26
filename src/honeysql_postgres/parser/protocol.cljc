@@ -7,7 +7,9 @@
   "Protocol for a parser."
   (parse [_ tokens]
     "Parses the given tokens.  Returns either no-match or a tuple of matched
-    value and remaining tokens."))
+    value and remaining tokens.")
+  (explain [_ tokens]
+    "Explains why the parser could not parse the given tokens."))
 
 (deftype Alt [parsers]
   Parser
@@ -19,6 +21,13 @@
                   no-match)))
             no-match
             parsers))
+  (explain [this tokens]
+    (when (= no-match (parse this tokens))
+      (let [reasons (reduce #(conj %1 (explain %2 tokens))
+                            []
+                            parsers)]
+        (str "Alternates failed: "
+             (str/join ", " reasons)))))
   Object
   (toString [_]
    (str "( "
@@ -32,6 +41,8 @@
       (if (not= no-match result)
         result
         [no-value tokens])))
+  (explain [_ _]
+    nil)
   Object
   (toString [_]
     (str parser " ?")))
@@ -46,6 +57,25 @@
                   (assoc result 0 (conj r (first result))))))
             [[] tokens]
             parsers))
+  (explain [this tokens]
+    (when (= no-match (parse this tokens))
+      (loop [ts tokens
+             ps parsers]
+        (when (seq ps)
+          (let [p (first ps)
+                result (parse p ts)]
+            (if (= no-match result)
+              (let [context (loop [context []
+                                   tokens tokens]
+                              (if (= tokens ts)
+                                context
+                                (recur (conj context (pr-str (first tokens)))
+                                       (next tokens))))
+                    explanation (explain p ts)]
+                (if (seq context)
+                  (str "After parsing " (str/join " " context) ", " explanation)
+                  explanation))
+              (recur (second result) (next ps))))))))
   Object
   (toString [_]
     (str/join " " (map str parsers))))
@@ -57,22 +87,44 @@
       (empty? tokens) no-match
       (pred t) [t more]
       :otherwise no-match))
+  (explain [this [t :as tokens]]
+    (cond
+      (not= no-match (parse this tokens)) nil
+      (seq tokens) (str (pr-str t) " did not match " str-rep)
+      :otherwise (str "End of input when expecting " str-rep)))
   Object
   (toString [_]
     str-rep))
+
+(deftype Epsilon []
+  Parser
+  (parse [_ tokens]
+    (if (seq tokens)
+      no-match
+      [nil nil]))
+  (explain [_ [t :as tokens]]
+    (when (seq tokens)
+      (str "Expected end of input but found " (pr-str t))))
+  Object
+  (toString [_] "ε"))
 
 (deftype Vector [parsers]
   Parser
   (parse [_ [t & more]]
     (if (vector? t)
-      (let [result (parse (->Sequence parsers) t)]
+      (let [result (parse (->Sequence (conj parsers (->Epsilon))) t)]
         (if (not= no-match result)
-          (let [[_ extra-tokens] result]
-            (if (empty? extra-tokens)
-              (assoc result 1 more)
-              no-match))
+          (let [[r] result]
+            [(subvec r 0 (dec (count r))) more])
           no-match))
       no-match))
+  (explain [this [t :as tokens]]
+    (when (= no-match (parse this tokens))
+      (cond
+        (empty? tokens) (str "Expected a vector but got end of input")
+        (not (vector? t)) (str "Expected a vector but got " (pr-str t))
+        :otherwise (str "Contents of vector did not match: "
+                        (explain (->Sequence (conj parsers (->Epsilon))) t)))))
   Object
   (toString [_]
     (if (empty? parsers)
@@ -90,6 +142,8 @@
               new-result (f inner-result)]
           [new-result tokens])
         no-match)))
+  (explain [_ tokens]
+    (explain parser tokens))
   Object
   (toString [_]
     (str parser)))
@@ -104,6 +158,8 @@
             (recur (assoc result 0 (conj acc (first result))))
             last))
         last)))
+  (explain [_ tokens]
+    nil)
   Object
   (toString [_]
     (str parser " *")))
@@ -116,18 +172,12 @@
         (= no-match star-result) no-match
         (zero? (count (first star-result))) no-match
         :ok star-result)))
+  (explain [this tokens]
+    (when (= no-match (parse parser tokens))
+      (explain parser tokens)))
   Object
   (toString [_]
     (str parser " +")))
-
-(deftype Epsilon []
-  Parser
-  (parse [_ tokens]
-    (if (seq tokens)
-      no-match
-      [nil nil]))
-  Object
-  (toString [_] "ε"))
 
 #?(:clj
    (defmacro pred*
