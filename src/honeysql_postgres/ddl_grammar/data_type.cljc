@@ -4,7 +4,6 @@
             [honeysql-postgres.parser :as p]
             [honeysql-postgres.types :as pg-sqlt]))
 
-
 (def ^:private simple-type?
   "Set of known types that take no arguments"
   #{;; integral types
