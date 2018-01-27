@@ -62,11 +62,11 @@
 
 (def ε
   "A parser that matches the end of input."
-  (proto/->Epsilon))
+  proto/ε)
 
 (def eps
   "A parser that matches the end of input."
-  ε)
+  proto/ε)
 
 (defn parse
   "Invokes the parser with the given tokens."

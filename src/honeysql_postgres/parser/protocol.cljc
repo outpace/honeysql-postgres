@@ -96,23 +96,26 @@
   (toString [_]
     str-rep))
 
-(deftype Epsilon []
-  Parser
-  (parse [_ tokens]
-    (if (seq tokens)
-      no-match
-      [nil nil]))
-  (explain [_ [t :as tokens]]
-    (when (seq tokens)
-      (str "Expected end of input but found " (pr-str t))))
-  Object
-  (toString [_] "ε"))
+
+(def ε
+  "Parser that matches the end of input."
+  (reify
+    Parser
+    (parse [_ tokens]
+      (if (seq tokens)
+        no-match
+        [nil nil]))
+    (explain [_ [t :as tokens]]
+      (when (seq tokens)
+        (str "Expected end of input but found " (pr-str t))))
+    Object
+    (toString [_] "ε")))
 
 (deftype Vector [parsers]
   Parser
   (parse [_ [t & more]]
     (if (vector? t)
-      (let [result (parse (->Sequence (conj parsers (->Epsilon))) t)]
+      (let [result (parse (->Sequence (conj parsers ε)) t)]
         (if (not= no-match result)
           (let [[r] result]
             [(subvec r 0 (dec (count r))) more])
@@ -124,7 +127,7 @@
         (empty? tokens) (str "Expected a vector but got end of input")
         (not (vector? t)) (str "Expected a vector but got " (pr-str t))
         :otherwise (str "Contents of vector did not match: "
-                        (explain (->Sequence (conj parsers (->Epsilon))) t)))))
+                        (explain (->Sequence (conj parsers ε)) t)))))
   Object
   (toString [_]
     (if (empty? parsers)
