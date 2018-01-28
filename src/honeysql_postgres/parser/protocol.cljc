@@ -1,7 +1,7 @@
 (ns honeysql-postgres.parser.protocol
   (:require [clojure.string :as str]))
 
-(def ^:privat no-match :honeysql-postgres.parser/no-match)
+(def ^:private no-match :honeysql-postgres.parser/no-match)
 
 (defprotocol Parser
   "Protocol for a parser."
