@@ -1,6 +1,7 @@
 (ns honeysql-postgres.helpers
-  (:refer-clojure :exclude [partition-by])
-  (:require [honeysql.helpers :as sqlh #?(:clj :refer :cljs :refer-macros) [defhelper]]))
+  (:refer-clojure :exclude [partition-by type])
+  (:require [honeysql.helpers :as sqlh :refer [defhelper]]
+            [honeysql-postgres.ddl-grammar :as ddl]))
 
 ;; Extension of the honeysql helper funcitons for postgreSQL
 
@@ -66,3 +67,12 @@
 
 (defhelper insert-into-as [m fields]
   (assoc m :insert-into-as (sqlh/collify fields)))
+
+(defn type
+  "Parse the given arguments into a SQL type.
+
+  Example:
+
+     (type :int) -> #sql/type [:int]]"
+  [& args]
+  (ddl/parse-type (vec args)))

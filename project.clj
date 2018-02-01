@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                  [org.clojure/clojurescript "1.10.339" :scope "provided"]
+                 [org.clojure/test.check "0.10.0-alpha2" :scope "test"]
                  [honeysql "0.9.3"]]
   :doo {:build "test"
         :alias {:default [:node]}}
