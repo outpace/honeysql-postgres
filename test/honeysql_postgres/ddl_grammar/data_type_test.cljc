@@ -313,16 +313,16 @@
     (is (= (pg-sqlt/->PgSqlSimpleType :jsonb)
            (p/parse ddl/type [:jsonb])))))
 
-(deftest test-parse-data-type--unknown
+(deftest test-parse-data-type--raw
   (testing "postgres types"
-    (is (= :pg_lsn
+    (is (= (pg-sqlt/->PgSqlRawType :pg_lsn)
            (p/parse ddl/type [:pg_lsn])))
-    (is (= :txid_snapshot
+    (is (= (pg-sqlt/->PgSqlRawType :txid_snapshot)
            (p/parse ddl/type [:txid_snapshot]))))
   (testing "honeysql helpers"
-    (is (= (sql/raw "FOO")
+    (is (= (pg-sqlt/->PgSqlRawType (sql/raw "FOO"))
            (p/parse ddl/type [(sql/raw "FOO")])))
-    (is (= (sql/call :varchar 32)
+    (is (= (pg-sqlt/->PgSqlRawType (sql/call :varchar 32))
            (p/parse ddl/type [(sql/call :varchar 32)])))))
 
 (deftest test-parse-data-type--arrays

@@ -183,7 +183,7 @@
              (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
                               "#pg-sql/type [:integer [4] [] [2] []]"))
           "PostgreSQL array with and without sizes")
-      (is (= (pg-sqlt/->PgSqlArrayType (sql/raw "INTEGER") [[4] [] [2] []] false)
+      (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlRawType (sql/raw "INTEGER")) [[4] [] [2] []] false)
              (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type
                                          'sql/raw honeysql.types/read-sql-raw}}
                               "#pg-sql/type [#sql/raw \"INTEGER\" [4] [] [2] []]"))

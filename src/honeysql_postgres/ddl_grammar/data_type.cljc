@@ -103,6 +103,10 @@
                                :minute-to-second))
                 (p/? time-precision))))
 
+(def ^:private to-sql-type
+  (p/map #(pg-sqlt/->PgSqlRawType %)
+         to-sql))
+
 (def ^:private base-type
   "Parser for non-array types"
   (p/| simple-type
@@ -111,7 +115,7 @@
        string-type
        time-type
        interval-type
-       to-sql))
+       to-sql-type))
 
 (def ^:private sql-array
   "Parser for an array suffix using the standard SQL syntax."
