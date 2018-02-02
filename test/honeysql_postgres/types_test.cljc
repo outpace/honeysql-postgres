@@ -2,8 +2,8 @@
   (:require [clojure.test :refer [deftest is testing]]
             [#?(:clj clojure.edn :cljs cljs.reader) :as edn]
             [honeysql.core :as sql]
-            [honeysql.types]
-            [honeysql-postgres.ddl-grammar]
+            [honeysql.types :as sqlt]
+            [honeysql-postgres.ddl-grammar :as ddl]
             [honeysql-postgres.types :as pg-sqlt]))
 
 ;; NOTE:
@@ -90,101 +90,101 @@
                   "PostgreSQL array with raw type"))))
   (testing "reading"
     (is (= (pg-sqlt/->PgSqlSimpleType :integer)
-           (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+           (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                             "#pg-sql/type [:integer]"))
         "simple type")
     (testing "arbitrary precision"
       (is (= (pg-sqlt/->PgSqlArbitraryPrecisionType :numeric nil nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:numeric]"))
           "without precision or scale")
       (is (= (pg-sqlt/->PgSqlArbitraryPrecisionType :decimal 20 nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:decimal [20]]"))
           "with precision")
       (is (= (pg-sqlt/->PgSqlArbitraryPrecisionType :numeric 20 4)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:numeric [20 4]]"))
           "with precision and precision"))
     (testing "floats"
       (is (= (pg-sqlt/->PgSqlFloatType nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:float]"))
           "without precision")
       (is (= (pg-sqlt/->PgSqlFloatType 2)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:float [2]]"))
           "with precision"))
     (testing "strings"
       (is (= (pg-sqlt/->PgSqlStringType :varchar nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:varchar]"))
           "without length")
       (is (= (pg-sqlt/->PgSqlStringType :varbit 2)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:varbit [2]]"))
           "with length"))
     (testing "times"
       (is (= (pg-sqlt/->PgSqlTimeType :time nil nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:time]"))
           "without precision or time zone")
       (is (= (pg-sqlt/->PgSqlTimeType :timestamp 2 nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:timestamp [2]]"))
           "with precision")
       (is (= (pg-sqlt/->PgSqlTimeType :time nil true)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:time :with-time-zone]"))
           "with time zone")
       (is (= (pg-sqlt/->PgSqlTimeType :time nil false)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:time :without-time-zone]"))
           "without time zone")
       (is (= (pg-sqlt/->PgSqlTimeType :timestamp 4 true)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:timestamp [4] :with-time-zone]"))
           "with precision and time zone"))
     (testing "intervals"
       (is (= (pg-sqlt/->PgSqlIntervalType nil nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:interval]"))
           "without field or precision")
       (is (= (pg-sqlt/->PgSqlIntervalType nil 2)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:interval [2]]"))
           "with precision")
       (is (= (pg-sqlt/->PgSqlIntervalType :year-to-month nil)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:interval :year-to-month]"))
           "with field")
       (is (= (pg-sqlt/->PgSqlIntervalType :minute-to-second 4)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:interval :minute-to-second [4]]"))
           "with field and precision"))
     (testing "arrays"
       (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [] true)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:integer :array]"))
           "standard SQL array without size")
       (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4]] true)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:integer :array [4]]"))
           "standard SQL array with size")
       (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[]] false)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:integer []]"))
           "PostgreSQL array without size")
       (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4]] false)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:integer [4]]"))
           "PostgreSQL array with size")
       (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlSimpleType :integer) [[4] [] [2] []] false)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type}}
                               "#pg-sql/type [:integer [4] [] [2] []]"))
           "PostgreSQL array with and without sizes")
       (is (= (pg-sqlt/->PgSqlArrayType (pg-sqlt/->PgSqlRawType (sql/raw "INTEGER")) [[4] [] [2] []] false)
-             (edn/read-string {:readers {'pg-sql/type honeysql-postgres.ddl-grammar/read-pg-sql-type
-                                         'sql/raw honeysql.types/read-sql-raw}}
+             (edn/read-string {:readers {'pg-sql/type ddl/read-pg-sql-type
+                                         'sql/raw sqlt/read-sql-raw}}
                               "#pg-sql/type [#sql/raw \"INTEGER\" [4] [] [2] []]"))
           "PostgreSQL array with sql/raw type"))))
