@@ -1,7 +1,6 @@
 (ns honeysql-postgres.parser
   (:refer-clojure :exclude [seq * +] :rename {map -map vector -vector})
   (:require [clojure.string :as str]
-            #?(:clj [honeysql.util :refer [defalias]])
             [honeysql-postgres.parser.protocol :as proto]))
 
 (defn |
@@ -22,21 +21,25 @@
   [& parsers]
   (proto/->Sequence (vec parsers)))
 
-(#?(:clj defalias :cljs def) pred proto/pred*)
+(defn pred
+  "Creates a parser that will match the given predicate and use the given text
+  representation."
+  [p txt]
+  (proto/->Predicate p txt))
 
 (defn one-of
   "Creates a parser that will match one of the given tokens, which must be
   defined in a set."
   [& ts]
-  (proto/pred* (set ts)
-               (str "( "
-                    (str/join " | " (-map pr-str ts))
-                    " )")))
+  (pred (set ts)
+        (str "( "
+             (str/join " | " (-map pr-str ts))
+             " )")))
 
 (defn lit
   "Creates a parser that will match the given literal."
   [t]
-  (proto/pred* #(= t %) (pr-str t)))
+  (pred #(= t %) (pr-str t)))
 
 (defn vector
   "Matches a single vector with contents matching the sequence of parsers."

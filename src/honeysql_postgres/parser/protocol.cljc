@@ -181,12 +181,3 @@
   Object
   (toString [_]
     (str parser " +")))
-
-#?(:clj
-   (defmacro pred*
-     "Creates a parser that will match the given predicate.  Takes a text
-     representation as optional arguments."
-     ([p]
-      `(pred* ~p ~(pr-str p)))
-     ([p txt]
-      `(->Predicate ~p ~txt))))

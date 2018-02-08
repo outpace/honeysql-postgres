@@ -257,58 +257,29 @@
           "text representation"))))
 
 (deftest test-pred
-  (testing "without a text represtation"
-    (let [parser (p/pred integer?)]
-      (testing "parsing"
-        (is (= [1 nil]
-               (proto/parse parser [1]))
-            "basic parse")
-        (is (= [1 [:foo :bar]]
-               (proto/parse parser [1 :foo :bar]))
-            "leftover tokens")
-        (is (= ::p/no-match
-               (proto/parse parser []))
-            "no input tokens")
-        (is (= ::p/no-match
-               (proto/parse parser [:baz :foo :foo :bar]))
-            "failed parse"))
-      (testing "expaining"
-        (is (nil? (proto/explain parser [1]))
-            "basic parse")
-        (is (nil? (proto/explain parser [1 :foo :bar]))
-            "leftover tokens")
-        (is (= "End of input when expecting integer?"
-               (proto/explain parser []))
-            "no input tokens")
-        (is (= ":baz did not match integer?"
-               (proto/explain parser [:baz :foo :foo :bar]))
-            "failed parse"))
-      (is (= "integer?" (str parser))
-          "text representation is correct")))
-  (testing "with a text representation"
-    (let [parser (p/pred #(and (integer? %) (pos? %)) "pos-int?")]
-      (testing "parsing"
-        (is (= [1 nil] (proto/parse parser [1]))
-            "basic parse")
-        (is (= [1 [:foo :bar]] (proto/parse parser [1 :foo :bar]))
-            "leftover tokens")
-        (is (= ::p/no-match (proto/parse parser []))
-            "no input tokens")
-        (is (= ::p/no-match (proto/parse parser [:baz :foo :foo :bar]))
-            "failed parse"))
-      (testing "explaining"
-        (is (nil? (proto/explain parser [1]))
-            "basic parse")
-        (is (nil? (proto/explain parser [1 :foo :bar]))
-            "leftover tokens")
-        (is (= "End of input when expecting pos-int?"
-               (proto/explain parser []))
-            "no input tokens")
-        (is (= ":baz did not match pos-int?"
-               (proto/explain parser [:baz :foo :foo :bar]))
-            "failed parse"))
-      (is (= "pos-int?" (str parser))
-          "text representation is correct"))))
+  (let [parser (p/pred #(and (integer? %) (pos? %)) "pos-int?")]
+    (testing "parsing"
+      (is (= [1 nil] (proto/parse parser [1]))
+          "basic parse")
+      (is (= [1 [:foo :bar]] (proto/parse parser [1 :foo :bar]))
+          "leftover tokens")
+      (is (= ::p/no-match (proto/parse parser []))
+          "no input tokens")
+      (is (= ::p/no-match (proto/parse parser [:baz :foo :foo :bar]))
+          "failed parse"))
+    (testing "explaining"
+      (is (nil? (proto/explain parser [1]))
+          "basic parse")
+      (is (nil? (proto/explain parser [1 :foo :bar]))
+          "leftover tokens")
+      (is (= "End of input when expecting pos-int?"
+             (proto/explain parser []))
+          "no input tokens")
+      (is (= ":baz did not match pos-int?"
+             (proto/explain parser [:baz :foo :foo :bar]))
+          "failed parse"))
+    (is (= "pos-int?" (str parser))
+        "text representation is correct")))
 
 (deftest test-vector
   (testing "empty vector"
