@@ -177,3 +177,16 @@
   "Reader function for pg-sql/type tagged literals."
   [args]
   (#?(:clj (resolve `parse-type) :cljs parse-type) args))
+
+(defn parse-constraint
+  "Parses an argument list as a constraint, throwing an exception if the parsing fails."
+  [args]
+  (p/parse (p/map first (p/seq (p/| table-constraint column-constraint)
+                               p/ε))
+           args
+           :throw? true))
+
+(defn read-pg-sql-constraint
+  "Reader function for pg-sql/constraint tagged literals."
+  [args]
+  (#?(:clj (resolve `parse-constraint) :cljs parse-constraint) args))
