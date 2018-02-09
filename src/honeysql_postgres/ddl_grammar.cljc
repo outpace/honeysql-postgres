@@ -73,9 +73,9 @@
 
 (def ^:private deferrable
   "Parser for the suffix that determines whether a constraint is deferrable."
-  (p/map {:deferrable true
-          :not-deferrable false}
-         (p/one-of :deferrable :not-deferrable)))
+  (p/map (fn [[not? _]] (not (boolean not?)))
+         (p/seq (p/? (p/lit :not))
+                (p/lit :deferrable))))
 
 (def ^:private initially
   "Parser for the suffix that determines whether a constraint is initially deferred"
@@ -107,8 +107,9 @@
 
 (def ^:private null-constraint
   "Parser for a NULL or NOT NULL column constraint."
-  (p/map #(pg-sqlt/->PgSqlNullConstraint nil (= :null %) nil nil)
-         (p/one-of :null :not-null)))
+  (p/map (fn [[not? _]] (pg-sqlt/->PgSqlNullConstraint nil (not (boolean not?)) nil nil))
+         (p/seq (p/? (p/lit :not))
+                (p/lit :null))))
 
 (def ^:private default-value
   "Parser for a default value"

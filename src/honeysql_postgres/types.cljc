@@ -98,7 +98,7 @@
   (unparse-constraint [_]
     (if allow-null?
       [:null]
-      [:not-null])))
+      [:not :null])))
 
 (defrecord PgSqlDefaultConstraint [name value deferrable? initially]
   PgSqlConstraint
@@ -122,7 +122,7 @@
         body (unparse-constraint c)
         deferrable-suffix (case deferrable?
                             true [:deferrable]
-                            false [:not-deferrable]
+                            false [:not :deferrable]
                             nil [])
         initially-suffix (case initially
                            :immediate [:initially :immediate]

@@ -204,7 +204,7 @@
       (is (= "#pg-sql/constraint [:check [:= :a :b] :deferrable]"
              (pr-str (pg-sqlt/->PgSqlCheckConstraint nil [:= :a :b] false true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:check [:= :a :b] :not-deferrable]"
+      (is (= "#pg-sql/constraint [:check [:= :a :b] :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlCheckConstraint nil [:= :a :b] false false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:check [:= :a :b] :initially :deferred]"
@@ -229,7 +229,7 @@
       (is (= "#pg-sql/constraint [:unique [:a :b] :deferrable]"
              (pr-str (pg-sqlt/->PgSqlUniqueConstraint nil [:a :b] nil true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:unique [:a :b] :not-deferrable]"
+      (is (= "#pg-sql/constraint [:unique [:a :b] :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlUniqueConstraint nil [:a :b] nil false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:unique [:a :b] :initially :deferred]"
@@ -254,7 +254,7 @@
       (is (= "#pg-sql/constraint [:primary-key [:a :b] :deferrable]"
              (pr-str (pg-sqlt/->PgSqlPrimaryKeyConstraint nil [:a :b] nil true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:primary-key [:a :b] :not-deferrable]"
+      (is (= "#pg-sql/constraint [:primary-key [:a :b] :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlPrimaryKeyConstraint nil [:a :b] nil false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:primary-key [:a :b] :initially :deferred]"
@@ -321,7 +321,7 @@
       (is (= "#pg-sql/constraint [:foreign-key [:a :b] :references :foo :deferrable]"
              (pr-str (pg-sqlt/->PgSqlForeignKeyConstraint nil [:a :b] :foo nil nil nil nil true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:foreign-key [:a :b] :references :foo :not-deferrable]"
+      (is (= "#pg-sql/constraint [:foreign-key [:a :b] :references :foo :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlForeignKeyConstraint nil [:a :b] :foo nil nil nil nil false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:foreign-key [:a :b] :references :foo :initially :deferred]"
@@ -343,7 +343,7 @@
       (is (= "#pg-sql/constraint [:null :deferrable]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil true true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:null :not-deferrable]"
+      (is (= "#pg-sql/constraint [:null :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil true false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:null :initially :deferred]"
@@ -356,25 +356,25 @@
              (pr-str (pg-sqlt/->PgSqlNullConstraint :foo true true :immediate)))
           "everything"))
     (testing "NOT NULL constraints"
-      (is (= "#pg-sql/constraint [:not-null]"
+      (is (= "#pg-sql/constraint [:not :null]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil false nil nil)))
           "basic constraint")
-      (is (= "#pg-sql/constraint [:constraint :foo :not-null]"
+      (is (= "#pg-sql/constraint [:constraint :foo :not :null]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint :foo false nil nil)))
           "named")
-      (is (= "#pg-sql/constraint [:not-null :deferrable]"
+      (is (= "#pg-sql/constraint [:not :null :deferrable]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil false true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:not-null :not-deferrable]"
+      (is (= "#pg-sql/constraint [:not :null :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil false false nil)))
           "with not deferrable")
-      (is (= "#pg-sql/constraint [:not-null :initially :deferred]"
+      (is (= "#pg-sql/constraint [:not :null :initially :deferred]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil false nil :deferred)))
           "initially deferred")
-      (is (= "#pg-sql/constraint [:not-null :initially :immediate]"
+      (is (= "#pg-sql/constraint [:not :null :initially :immediate]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint nil false nil :immediate)))
           "initially immediate")
-      (is (= "#pg-sql/constraint [:constraint :foo :not-null :deferrable :initially :immediate]"
+      (is (= "#pg-sql/constraint [:constraint :foo :not :null :deferrable :initially :immediate]"
              (pr-str (pg-sqlt/->PgSqlNullConstraint :foo false true :immediate)))
           "everything"))
     (testing "DEFAULT constraints"
@@ -387,7 +387,7 @@
       (is (= "#pg-sql/constraint [:default :baz :deferrable]"
              (pr-str (pg-sqlt/->PgSqlDefaultConstraint nil :baz true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:default :baz :not-deferrable]"
+      (is (= "#pg-sql/constraint [:default :baz :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlDefaultConstraint nil :baz false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:default :baz :initially :deferred]"
@@ -454,7 +454,7 @@
       (is (= "#pg-sql/constraint [:references :foo :deferrable]"
              (pr-str (pg-sqlt/->PgSqlReferencesConstraint nil :foo nil nil nil nil true nil)))
           "with deferrable")
-      (is (= "#pg-sql/constraint [:references :foo :not-deferrable]"
+      (is (= "#pg-sql/constraint [:references :foo :not :deferrable]"
              (pr-str (pg-sqlt/->PgSqlReferencesConstraint nil :foo nil nil nil nil false nil)))
           "with not deferrable")
       (is (= "#pg-sql/constraint [:references :foo :initially :deferred]"
@@ -486,7 +486,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlCheckConstraint nil [:= :a :b] false false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:check [:= :a :b] :not-deferrable]"))
+                              "#pg-sql/constraint [:check [:= :a :b] :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlCheckConstraint nil [:= :a :b] false nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
@@ -519,7 +519,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlUniqueConstraint nil [:a :b] nil false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:unique [:a :b] :not-deferrable]"))
+                              "#pg-sql/constraint [:unique [:a :b] :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlUniqueConstraint nil [:a :b] nil nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
@@ -552,7 +552,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlPrimaryKeyConstraint nil [:a :b] nil false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:primary-key [:a :b] :not-deferrable]"))
+                              "#pg-sql/constraint [:primary-key [:a :b] :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlPrimaryKeyConstraint nil [:a :b] nil nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
@@ -640,7 +640,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlForeignKeyConstraint nil [:a :b] :foo nil nil nil nil false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:foreign-key [:a :b] :references :foo :not-deferrable]"))
+                              "#pg-sql/constraint [:foreign-key [:a :b] :references :foo :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlForeignKeyConstraint nil [:a :b] :foo nil nil nil nil nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
@@ -669,7 +669,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlNullConstraint nil true false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:null :not-deferrable]"))
+                              "#pg-sql/constraint [:null :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlNullConstraint nil true nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
@@ -686,31 +686,31 @@
     (testing "NOT NULL constraints"
       (is (= (pg-sqlt/->PgSqlNullConstraint nil false nil nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:not-null]"))
+                              "#pg-sql/constraint [:not :null]"))
           "basic constraint")
       (is (= (pg-sqlt/->PgSqlNullConstraint :foo false nil nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:constraint :foo :not-null]"))
+                              "#pg-sql/constraint [:constraint :foo :not :null]"))
           "named")
       (is (= (pg-sqlt/->PgSqlNullConstraint nil false true nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:not-null :deferrable]"))
+                              "#pg-sql/constraint [:not :null :deferrable]"))
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlNullConstraint nil false false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:not-null :not-deferrable]"))
+                              "#pg-sql/constraint [:not :null :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlNullConstraint nil false nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:not-null :initially :deferred]"))
+                              "#pg-sql/constraint [:not :null :initially :deferred]"))
           "initially deferred")
       (is (= (pg-sqlt/->PgSqlNullConstraint nil false nil :immediate)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:not-null :initially :immediate]"))
+                              "#pg-sql/constraint [:not :null :initially :immediate]"))
           "initially immediate")
       (is (= (pg-sqlt/->PgSqlNullConstraint :foo false true :immediate)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:constraint :foo :not-null :deferrable :initially :immediate]"))
+                              "#pg-sql/constraint [:constraint :foo :not :null :deferrable :initially :immediate]"))
           "everything"))
     (testing "DEFAULT constraints"
       (is (= (pg-sqlt/->PgSqlDefaultConstraint nil :baz nil nil)
@@ -727,7 +727,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlDefaultConstraint nil :baz false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:default :baz :not-deferrable]"))
+                              "#pg-sql/constraint [:default :baz :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlDefaultConstraint nil :baz nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
@@ -815,7 +815,7 @@
           "with deferrable")
       (is (= (pg-sqlt/->PgSqlReferencesConstraint nil :foo nil nil nil nil false nil)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}
-                              "#pg-sql/constraint [:references :foo :not-deferrable]"))
+                              "#pg-sql/constraint [:references :foo :not :deferrable]"))
           "with not deferrable")
       (is (= (pg-sqlt/->PgSqlReferencesConstraint nil :foo nil nil nil nil nil :deferred)
              (edn/read-string {:readers {'pg-sql/constraint ddl/read-pg-sql-constraint}}

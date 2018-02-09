@@ -20,7 +20,7 @@
            (p/parse @#'ddl/table-constraint [:check [:= :a :b] :deferrable]))
         "deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlCheckConstraint {:predicate [:= :a :b] :no-inherit? false :deferrable? false}) nil]
-           (p/parse @#'ddl/table-constraint [:check [:= :a :b] :not-deferrable]))
+           (p/parse @#'ddl/table-constraint [:check [:= :a :b] :not :deferrable]))
         "not deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlCheckConstraint {:predicate [:= :a :b] :no-inherit? false :initially :deferred}) nil]
            (p/parse @#'ddl/table-constraint [:check [:= :a :b] :initially :deferred]))
@@ -121,25 +121,25 @@
 (deftest test-column-constraint
   (testing "NOT NULL"
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false}) nil]
-           (p/parse @#'ddl/column-constraint [:not-null]))
+           (p/parse @#'ddl/column-constraint [:not :null]))
         "basic constraint")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:name :foo :allow-null? false}) nil]
-           (p/parse @#'ddl/column-constraint [:constraint :foo :not-null]))
+           (p/parse @#'ddl/column-constraint [:constraint :foo :not :null]))
         "named constraint")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false :deferrable? true}) nil]
-           (p/parse @#'ddl/column-constraint [:not-null :deferrable]))
+           (p/parse @#'ddl/column-constraint [:not :null :deferrable]))
         "deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false :deferrable? false}) nil]
-           (p/parse @#'ddl/column-constraint [:not-null :not-deferrable]))
+           (p/parse @#'ddl/column-constraint [:not :null :not :deferrable]))
         "not deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false :initially :deferred}) nil]
-           (p/parse @#'ddl/column-constraint [:not-null :initially :deferred]))
+           (p/parse @#'ddl/column-constraint [:not :null :initially :deferred]))
         "initially deferred")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false :initially :immediate}) nil]
-           (p/parse @#'ddl/column-constraint [:not-null :initially :immediate]))
+           (p/parse @#'ddl/column-constraint [:not :null :initially :immediate]))
         "initially immediate")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false :deferrable? true :initially :immediate}) nil]
-           (p/parse @#'ddl/column-constraint [:not-null :deferrable :initially :immediate]))
+           (p/parse @#'ddl/column-constraint [:not :null :deferrable :initially :immediate]))
         "initially immediate but deferrable"))
   (testing "NULL"
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? true}) nil]
@@ -152,7 +152,7 @@
            (p/parse @#'ddl/column-constraint [:null :deferrable]))
         "deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? true :deferrable? false}) nil]
-           (p/parse @#'ddl/column-constraint [:null :not-deferrable]))
+           (p/parse @#'ddl/column-constraint [:null :not :deferrable]))
         "not deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? true :initially :deferred}) nil]
            (p/parse @#'ddl/column-constraint [:null :initially :deferred]))
@@ -177,7 +177,7 @@
            (p/parse @#'ddl/column-constraint [:check [:= :a :b] :deferrable]))
         "deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlCheckConstraint {:predicate [:= :a :b] :no-inherit? false :deferrable? false}) nil]
-           (p/parse @#'ddl/column-constraint [:check [:= :a :b] :not-deferrable]))
+           (p/parse @#'ddl/column-constraint [:check [:= :a :b] :not :deferrable]))
         "not deferrable constraint")
     (is (= [(pg-sqlt/map->PgSqlCheckConstraint {:predicate [:= :a :b] :no-inherit? false :initially :deferred}) nil]
            (p/parse @#'ddl/column-constraint [:check [:= :a :b] :initially :deferred]))
@@ -285,7 +285,7 @@
                                            [(pg-sqlt/map->PgSqlNullConstraint {:allow-null? false})
                                             (pg-sqlt/map->PgSqlUniqueConstraint {})])
           nil]
-         (p/parse @#'ddl/column-definition [:foo :integer :not-null :unique]))
+         (p/parse @#'ddl/column-definition [:foo :integer :not :null :unique]))
       "multiple column constraints"))
 
 (deftest test-parse-row
