@@ -4,8 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                 [org.clojure/clojurescript "1.10.238" :scope "provided"]
-                 [honeysql "0.9.2"]]
+                 [org.clojure/clojurescript "1.10.339" :scope "provided"]
+                 [honeysql "0.9.3"]]
   :doo {:build "test"
         :alias {:default [:node]}}
   :cljsbuild {:builds {:test {:source-paths ["src" "test"]
